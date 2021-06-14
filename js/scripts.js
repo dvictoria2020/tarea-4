@@ -78,7 +78,7 @@ $.getJSON("https://dvictoria2020.github.io/tarea-4/datos/areas_publicas.geojson"
 	  return {'color': "green", 'weight': 0.5}
     },
     onEachFeature: function(feature, layer) {
-      var popupText = "<strong>Nombre</strong>: " + feature.properties.nomb_refere + "<br>" +
+      var popupText = "<strong>Nombre</strong>: " + feature.properties.nom_refere + "<br>" +
                       "<strong>Tipo</strong>: " + feature.properties.tipo;
       layer.bindPopup(popupText);
     },			
