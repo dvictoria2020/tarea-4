@@ -20,13 +20,19 @@ var capa_esri = L.tileLayer(
 
 // Conjunto de capas base
 var capas_base = {
-  "ESRI": capa_esri,
   "OSM": capa_osm,
+  "ESRI": capa_esri,
 };
 
 // Ícono personalizado para asentamientos informales
 const iconoVivienda = L.divIcon({
-  html: '<i class="fas fa-house-damage-2x"></i>',
+  html: '<i class="fas fa-house-damage fa-2x"></i>',
+  className: 'estiloIconos'
+});
+
+// Ícono personalizado para áreas públicas
+const iconoParques = L.divIcon({
+  html: '<i class="fas fa-thumbtack fa-2x"></i>',
   className: 'estiloIconos'
 });
 	    
@@ -37,15 +43,16 @@ control_capas = L.control.layers(capas_base).addTo(mapa);
 L.control.scale().addTo(mapa);
 
 // Capa vectorial de centroides asentamientos informales en formato GeoJSON
-
 $.getJSON("https://dvictoria2020.github.io/tarea-4/datos/asentamientos_informales.geojson", function(geodata) {
   //Registros individuales
   var capa_asentamientos_informales = L.geoJson(geodata, {
-    style: function(feature) {
-	  return {'color': "grey", 'weight': 1.5, 'fillOpacity': 0.0}
+    style: function() {
+	  return {'color': "#013220", 'weight': 3}
     },
     onEachFeature: function(feature, layer) {
-      var popupText = "<strong>Nombre del Asentamiento Informal</strong>: " + feature.properties.nombre_asentamiento + "<br>" + "<strong>Distrito</strong>: " + feature.properties.distrito + "<br>" + "<strong>Cantidad de viviendas</strong>: " + feature.properties.viviendas;
+      var popupText = "<strong>Nombre del Asentamiento Informal</strong>: " + feature.properties.nombre_asentamiento + "<br>" +
+                      "<strong>Distrito</strong>: " + feature.properties.distrito + "<br>" +
+                      "<strong>Cantidad de viviendas</strong>: " + feature.properties.viviendas;
       layer.bindPopup(popupText);
     },			
     pointToLayer: function(getJsonPoint, latlng) {
@@ -61,4 +68,30 @@ $.getJSON("https://dvictoria2020.github.io/tarea-4/datos/asentamientos_informale
   asentamientos_informales_agrupados.addTo(mapa);
   control_capas.addOverlay(asentamientos_informales_agrupados, 'Asentamientos informales agrupados');
   control_capas.addOverlay(capa_asentamientos_informales, 'Asentamientos informales individuales');
+});
+
+// Capa vectorial de registros áreas públicas
+$.getJSON("https://dvictoria2020.github.io/tarea-4/datos/areas_publicas.geojson", function(geodata) {
+  //Registros individuales
+  var capa_areas_publicas_calor = L.geoJson(geodata, {
+    style: function() {
+	  return {'color': "#013457", 'weight': 1}
+    },
+    onEachFeature: function(feature, layer) {
+      var popupText = "<strong>Nombre</strong>: " + feature.properties.nomb_refere + "<br>" +
+                      "<strong>Tipo</strong>: " + feature.properties.tipo;
+      layer.bindPopup(popupText);
+    },			
+    pointToLayer: function(getJsonPoint, latlng) {
+        return L.marker(latlng, {icon: iconoParques});
+    }
   });
+
+  // Capa de calor (heatmap)
+  coordenadas = geodata.features.map(feat => feat.geometry.coordinates.reverse());
+  var capa_areas_publicas_calor = L.heatLayer(coordenadas, {radius: 30, blur: 15, gradient: {0.5: 'purple', 0.8: 'green', 1: 'red'}});  
+  
+  // Se añaden las capas al mapa y al control de capas
+  capa_areas_publicas_calor.addTo(mapa);
+  control_capas.addOverlay(capa_areas_publicas_calor, 'Mapa de calor de las áreas públicas');
+});
